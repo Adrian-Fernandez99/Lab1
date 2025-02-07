@@ -32,6 +32,11 @@ SETUP:
 	LDI		R16, 0xFF
 	OUT		PORTD, R16		// Habilitar pull-ups en puerto D
 
+	LDI		R16, 0x00
+	OUT		DDRC, R16		// Setear puerto C como entrada
+	LDI		R16, 0xFF
+	OUT		PORTC, R16		// Habilitar pull-ups en puerto C
+
 // PORTB como salida inicialmente encendido
 	LDI		R16, 0xFF
 	OUT		DDRB, R16		// Setear puerto B como salida
@@ -39,9 +44,11 @@ SETUP:
 // Realizar variables
 	LDI		R17, 0xFF
 	LDI		R19, 0x00
+	LDI		R20, 0x00
 
-	CONTADOR:
+CONTADOR:
 	IN		R16, PIND		// Leemos la entrada del puerto D
+	CP		R17, R16		// Comparamos para ver si hubo cambio de estado
 	CP		R17, R16		// Comparamos para ver si hubo cambio de estado
 	BREQ	CONTADOR		// Si no hubo cambio regresamos
 	CALL	DELAY			// Si hubo cambio esperamos para evitar rebote
