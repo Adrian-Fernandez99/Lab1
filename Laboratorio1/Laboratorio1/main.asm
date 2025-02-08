@@ -32,14 +32,12 @@ SETUP:
 	LDI		R16, 0xFF
 	OUT		PORTD, R16		// Habilitar pull-ups en puerto D
 
-	LDI		R16, 0x00
-	OUT		DDRC, R16		// Setear puerto C como entrada
-	LDI		R16, 0xFF
-	OUT		PORTC, R16		// Habilitar pull-ups en puerto C
-
 // PORTB como salida inicialmente encendido
 	LDI		R16, 0xFF
 	OUT		DDRB, R16		// Setear puerto B como salida
+// PORTD como salida inicialmente encendido
+	LDI		R16, 0xFF
+	OUT		DDRD, R16		// Setear puerto D como salida
 
 // Realizar variables
 	LDI		R17, 0xFF
@@ -50,14 +48,16 @@ CONTADOR:
 	// Revisar entrada D
 	IN		R16, PIND		// Leemos la entrada del puerto D
 	CP		R17, R16		// Comparamos para ver si hubo cambio de estado
-	BRNE	+1
+	BREQ	CONTADOR2
 	CALL	DEDEDO
+CONTADOR2:
 	// Revisar entrada C
-	IN		R16, PINC		// Leemos la entrada del puerto D
+	IN		R16, PIND		// Leemos la entrada del puerto D
 	CP		R17, R16		// Comparamos para ver si hubo cambio de estado
-	BRNE	+1
+	BREQ	REV
 	CALL	CECECO
-	BREQ	CONTADOR		// Si no hubo cambio regresamos
+REV:
+	JMP		CONTADOR
 
 SUMAD:
 // Establecemos el bit 2 como botón de suma y el bit 3 como resta.
@@ -70,11 +70,11 @@ SUMAD:
 
 SUMAC:
 	// Establecemos el bit 2 como botón de suma y el bit 3 como resta.
-	SBRS	R16, 2			// Revisamos que el bit de suma este encendido	
+	SBRS	R16, 4			// Revisamos que el bit de suma este encendido	
 	CALL	SUMA2
-	SBRS	R16, 3			// Revisamos que el bit de resta este encendido	
+	SBRS	R16, 5			// Revisamos que el bit de resta este encendido	
 	DEC		R20
-	OUT		PINB, R20
+	OUT		PINC, R20
 	RJMP	CONTADOR
 
 // Sub-rutina (no de interrupción)
@@ -100,13 +100,13 @@ DEDEDO:
 	CALL	DELAY			// Si hubo cambio esperamos para evitar rebote
 	IN		R16, PIND		// Nos aseguramos que la elctura haya sido correcta
 	CP		R17, R16
-	BREQ	CONTADOR
+	BREQ	CONTADOR2
 	MOV		R17, R16		// Generamos nuevo estado antiguo
 	JMP		SUMAD
 
 CECECO:
 	CALL	DELAY			// Si hubo cambio esperamos para evitar rebote
-	IN		R16, PINC		// Nos aseguramos que la elctura haya sido correcta
+	IN		R16, PIND		// Nos aseguramos que la elctura haya sido correcta
 	CP		R17, R16
 	BREQ	CONTADOR
 	MOV		R17, R16		// Generamos nuevo estado antiguo
