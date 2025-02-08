@@ -47,22 +47,34 @@ SETUP:
 	LDI		R20, 0x00
 
 CONTADOR:
+	// Revisar entrada D
 	IN		R16, PIND		// Leemos la entrada del puerto D
 	CP		R17, R16		// Comparamos para ver si hubo cambio de estado
+	BRNE	+1
+	CALL	DEDEDO
+	// Revisar entrada C
+	IN		R16, PINC		// Leemos la entrada del puerto D
 	CP		R17, R16		// Comparamos para ver si hubo cambio de estado
+	BRNE	+1
+	CALL	CECECO
 	BREQ	CONTADOR		// Si no hubo cambio regresamos
-	CALL	DELAY			// Si hubo cambio esperamos para evitar rebote
-	IN		R16, PIND		// Nos aseguramos que la elctura haya sido correcta
-	CP		R17, R16
-	BREQ	CONTADOR
-	MOV		R17, R16		// Generamos nuevo estado antiguo
 
+SUMAD:
 // Establecemos el bit 2 como botón de suma y el bit 3 como resta.
 	SBRS	R16, 2			// Revisamos que el bit de suma este encendido	
-	CALL	SUMA
+	CALL	SUMA1
 	SBRS	R16, 3			// Revisamos que el bit de resta este encendido	
 	DEC		R19
 	OUT		PINB, R19
+	RJMP	CONTADOR
+
+SUMAC:
+	// Establecemos el bit 2 como botón de suma y el bit 3 como resta.
+	SBRS	R16, 2			// Revisamos que el bit de suma este encendido	
+	CALL	SUMA2
+	SBRS	R16, 3			// Revisamos que el bit de resta este encendido	
+	DEC		R20
+	OUT		PINB, R20
 	RJMP	CONTADOR
 
 // Sub-rutina (no de interrupción)
@@ -84,10 +96,32 @@ SUB_DELAY3:
 	BRNE	SUB_DELAY3
 	RET
 
-SUMA:
+DEDEDO:
+	CALL	DELAY			// Si hubo cambio esperamos para evitar rebote
+	IN		R16, PIND		// Nos aseguramos que la elctura haya sido correcta
+	CP		R17, R16
+	BREQ	CONTADOR
+	MOV		R17, R16		// Generamos nuevo estado antiguo
+	JMP		SUMAD
+
+CECECO:
+	CALL	DELAY			// Si hubo cambio esperamos para evitar rebote
+	IN		R16, PINC		// Nos aseguramos que la elctura haya sido correcta
+	CP		R17, R16
+	BREQ	CONTADOR
+	MOV		R17, R16		// Generamos nuevo estado antiguo
+	JMP		SUMAC
+
+SUMA1:
 	INC		R19
 	SBRC	R19, 4
 	LDI		R19, 0x00
+	RET
+
+SUMA2:
+	INC		R20
+	SBRC	R20, 4
+	LDI		R20, 0x00
 	RET
 
 // Rutinas de interrupción
